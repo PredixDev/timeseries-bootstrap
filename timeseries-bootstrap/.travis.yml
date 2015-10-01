@@ -1,0 +1,12 @@
+before_script:
+  - export http_proxy=http://sjc1intproxy01.crd.ge.com:8080/
+  - export https_proxy=http://sjc1intproxy01.crd.ge.com:8080/
+  - export no_proxy="localhost, 127.0.0.1, *.ge.com"
+  - . ./common-build-tools/build-environments/mvn-jdk7
+
+script:
+  script:
+    - mvn clean verify install -s mvn_settings.xml -Pwith.jacoco
+    - tar zcvf acs-model-jacoco.tar.gz model/target/site/jacoco
+    - tar zcvf acs-commons-jacoco.tar.gz commons/target/site/jacoco
+    - tar zcvf acs-service-jacoco.tar.gz service/target/site/jacoco
