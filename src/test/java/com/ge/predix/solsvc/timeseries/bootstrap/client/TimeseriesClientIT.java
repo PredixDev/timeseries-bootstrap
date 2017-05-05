@@ -53,7 +53,7 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @IntegrationTest({ "server.port=0" })
-@ComponentScan("com.ge.predix.solsvc.restclient")
+@ComponentScan({"com.ge.predix.solsvc.restclient"})
 @ActiveProfiles("local")
 @ContextConfiguration(locations = {
 		"classpath*:META-INF/spring/ext-util-scan-context.xml",
@@ -105,7 +105,7 @@ public class TimeseriesClientIT{
 
 			}		
 		};
-		this.timeseriesFactory.createConnectionToTimeseriesWebsocket(mListener);
+		this.timeseriesFactory.createTimeseriesWebsocketConnectionPool(mListener);
 		createMetrics();
 		try {
 			Thread.sleep(1000); // / due to delay in Injection pipeline and
@@ -131,7 +131,7 @@ public class TimeseriesClientIT{
 
 		List<Header> headers =  this.timeseriesFactory.getTimeseriesHeaders();
 		WebSocketAdapter nullListener = null;
-        this.timeseriesFactory.createConnectionToTimeseriesWebsocket(nullListener );
+        this.timeseriesFactory.createTimeseriesWebsocketConnectionPool(nullListener );
 		createMetrics();
 		try {
 			Thread.sleep(1000); // / due to delay in Injection pipeline and

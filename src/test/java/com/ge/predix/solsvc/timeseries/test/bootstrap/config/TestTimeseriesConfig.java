@@ -8,13 +8,16 @@
  * under which the software has been supplied.
  */
 
-package com.ge.predix.solsvc.timeseries.bootstrap.config;
+package com.ge.predix.solsvc.timeseries.test.bootstrap.config;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import com.ge.predix.solsvc.timeseries.bootstrap.config.DefaultTimeseriesConfig;
+import com.ge.predix.solsvc.timeseries.bootstrap.config.ITimeseriesConfig;
 
 /**
  * Properties needed to make rest calls to the Time Series instance

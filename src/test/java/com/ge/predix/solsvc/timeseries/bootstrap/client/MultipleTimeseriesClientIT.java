@@ -24,9 +24,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.IntegrationTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
@@ -41,7 +44,10 @@ import com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsRespon
 import com.ge.predix.entity.timeseries.tags.TagsList;
 import com.ge.predix.solsvc.ext.util.JsonMapper;
 import com.ge.predix.solsvc.timeseries.bootstrap.client.TimeseriesClient;
+import com.ge.predix.solsvc.timeseries.bootstrap.config.DefaultTimeseriesConfig;
 import com.ge.predix.solsvc.timeseries.bootstrap.config.ITimeseriesConfig;
+import com.ge.predix.solsvc.websocket.config.DefaultWebSocketConfigForTimeseries;
+import com.ge.predix.solsvc.websocket.config.IWebSocketConfig;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 
@@ -57,12 +63,12 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 @ActiveProfiles("local")
 @ContextConfiguration(locations = {
 		"classpath*:META-INF/spring/ext-util-scan-context.xml",
-		"classpath*:META-INF/spring/timeseries-bootstrap-scan-context.xml",
+		"classpath*:META-INF/spring/TEST-timeseries-bootstrap-scan-context.xml",
 		"classpath*:META-INF/spring/predix-websocket-client-scan-context.xml",
 		"classpath*:META-INF/spring/predix-rest-client-scan-context.xml",
 		"classpath*:META-INF/spring/predix-rest-client-sb-properties-context.xml" })
 @PropertySource("classpath:timeseries-config-test.properties")
-public class MultipleTimeseriesClientIT{
+public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 
     private static Logger log = LoggerFactory.getLogger(MultipleTimeseriesClientIT.class);
 
@@ -80,12 +86,13 @@ public class MultipleTimeseriesClientIT{
 	@Autowired
 	protected TimeseriesClient timeseriesClient;
 
+    ApplicationContext applicationContext;
 
 	/**
 	 * -
 	 */
 	@Test
-	public void runAllTest() {
+	public void runAllTest() {	    
 		this.timeseriesClient.overrideConfig(this.tsConfig);
 		
 		List<Header> headers = this.timeseriesClient.getTimeseriesHeaders();
@@ -103,7 +110,7 @@ public class MultipleTimeseriesClientIT{
 
 			}		
 		};
-		this.timeseriesClient.createConnectionToTimeseriesWebsocket(mListener);
+		this.timeseriesClient.createTimeseriesWebsocketConnectionPool(mListener);
 		createMetrics();
 		try {
 			Thread.sleep(1000); // / due to delay in Injection pipeline and
@@ -129,7 +136,7 @@ public class MultipleTimeseriesClientIT{
 
 		List<Header> headers =  this.timeseriesClient.getTimeseriesHeaders();
 		WebSocketAdapter nullListener = null;
-        this.timeseriesClient.createConnectionToTimeseriesWebsocket(nullListener );
+        this.timeseriesClient.createTimeseriesWebsocketConnectionPool(nullListener );
 		createMetrics();
 		try {
 			Thread.sleep(1000); // / due to delay in Injection pipeline and
@@ -144,6 +151,25 @@ public class MultipleTimeseriesClientIT{
 //		queryForDatapointsAndOrder(headers);
 //		queryForLatestDatapoints(headers);
 	}
+	
+
+	/**
+	 *  -
+	 */
+	@SuppressWarnings("nls")
+    @Test
+    public void createATimeseriesClientFokASpecificTenant() {
+	    //create a prototype client for the Tenant
+	    TimeseriesClient timeseriesClient = (TimeseriesClient) this.applicationContext.getBean("timeseriesClientImpl");
+	    //Create a Config object, use this one because it's "prototype"
+	    ITimeseriesConfig timeseriesConfig = (ITimeseriesConfig) this.applicationContext.getBean("defaultTimeseriesConfig");
+	    timeseriesConfig.setZoneId(timeseriesConfig.getZoneId());
+	    timeseriesConfig.setWsUri(timeseriesConfig.getWsUri());
+	    timeseriesClient.overrideConfig(timeseriesConfig);
+	    timeseriesClient.createTimeseriesWebsocketConnectionPool();
+    }
+
+    
 
 
 	@SuppressWarnings({ "unchecked" })
@@ -349,5 +375,17 @@ public class MultipleTimeseriesClientIT{
 				.queryForLatestDatapoint(datapoints, headers);
 		assertNotNull(response);
 	}
+
+
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException
+    {
+        this.applicationContext = applicationContext;
+        
+    }
 
 }

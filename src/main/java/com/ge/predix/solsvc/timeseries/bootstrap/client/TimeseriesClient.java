@@ -46,14 +46,14 @@ public interface TimeseriesClient
 	 * @since Predix Time Series API v1.0 Method to create connection to TS
 	 *        Websocket to the configured TS Server List<Header> headers	  
 	 */
-	public void createConnectionToTimeseriesWebsocket(WebSocketAdapter messageListener);
+	public void createTimeseriesWebsocketConnectionPool(WebSocketAdapter messageListener);
 
 	   /**
      * @param messageListener - method accepts custom message listener
      * @since Predix Time Series API v1.0 Method to create connection to TS
      *        Websocket to the configured TS Server List<Header> headers      
      */
-    public void createConnectionToTimeseriesWebsocket();
+    public void createTimeseriesWebsocketConnectionPool();
 
     
     /**

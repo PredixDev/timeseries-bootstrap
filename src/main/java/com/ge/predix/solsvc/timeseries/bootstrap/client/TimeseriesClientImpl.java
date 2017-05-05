@@ -12,7 +12,12 @@ package com.ge.predix.solsvc.timeseries.bootstrap.client;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 
@@ -26,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +42,7 @@ import com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery;
 import com.ge.predix.entity.timeseries.datapoints.queryrequest.latest.DatapointsLatestQuery;
 import com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsResponse;
 import com.ge.predix.entity.timeseries.tags.TagsList;
+import com.ge.predix.solsvc.ext.util.IJsonMapper;
 import com.ge.predix.solsvc.ext.util.JsonMapper;
 import com.ge.predix.solsvc.restclient.impl.RestClient;
 import com.ge.predix.solsvc.timeseries.bootstrap.api.TimeSeriesAPIV1;
@@ -57,6 +64,11 @@ import com.neovisionaries.ws.client.WebSocketException;
 public class TimeseriesClientImpl implements TimeseriesClient {
 
 	private static Logger log = LoggerFactory.getLogger(TimeseriesClientImpl.class);
+	
+	private HashMap<String, CompletableFuture<Integer>> pendingMessages;
+
+	@Value("${predix.timeseries.timeout:10}")
+	private int MessageStatusTimeout;
 
 	@Autowired
 	private RestClient restClient;
@@ -65,7 +77,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	private WebSocketClient wsClient;
 
 	@Autowired
-	private JsonMapper jsonMapper;
+	private IJsonMapper jsonMapper;
 
 	@Autowired
 	@Qualifier("defaultTimeseriesConfig")
@@ -91,11 +103,14 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	 */
 	@SuppressWarnings("nls")
 	@Override
-	public void createConnectionToTimeseriesWebsocket(WebSocketAdapter messageListener) {
+	public void createTimeseriesWebsocketConnectionPool(WebSocketAdapter messageListener) {
 		try {
 			WebSocketAdapter listener = messageListener;
 			if (listener == null) {
 				listener = registerDefaultMessageListener();
+				this.pendingMessages = new HashMap<String, CompletableFuture<Integer>>();
+			} else {
+				this.pendingMessages = null;
 			}
 			List<Header> nullHeaders = null;
 
@@ -113,10 +128,10 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	 */
 	@SuppressWarnings("nls")
 	@Override
-	public void createConnectionToTimeseriesWebsocket() {
+	public void createTimeseriesWebsocketConnectionPool() {
 		try {
 			WebSocketAdapter listener = null;
-			createConnectionToTimeseriesWebsocket(listener);
+			createTimeseriesWebsocketConnectionPool(listener);
 		} catch (Exception e) {
 			log.error("Connection to websocket failed. " + e);
 			throw new RuntimeException("Connection to websocket failed. ", e);
@@ -163,6 +178,9 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 				} else {
 					this.logger.debug("SUCCESS...." + am.getStatusCode() + "--ID:" + am.getMessageId()); //$NON-NLS-2$
 				}
+				if (pendingMessages != null && pendingMessages.containsKey(am.getMessageId())) {
+					pendingMessages.get(am.getMessageId()).complete(am.getStatusCode());
+				}
 			}
 		};
 		return mListener;
@@ -180,12 +198,25 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	@Override
 	public void postDataToTimeseriesWebsocket(DatapointsIngestion datapointsIngestion) {
 		try {
+			CompletableFuture<Integer> completed = null;
+			if (this.pendingMessages != null) {
+				completed = new CompletableFuture<Integer>();
+				this.pendingMessages.put(datapointsIngestion.getMessageId(), completed);
+			}
 			String request = this.jsonMapper.toJson(datapointsIngestion);
 			log.debug(request);
 
 			this.wsClient.postTextWSData(request);
-		} catch (IOException | WebSocketException e) {
+
+			if (completed != null && completed.get(MessageStatusTimeout, TimeUnit.SECONDS) > 399) {
+				throw new IOException("ERROR STATUS CODE... " + completed.get());
+			}
+		} catch (IOException | WebSocketException | InterruptedException | ExecutionException | TimeoutException e) {
 			throw new RuntimeException("Failed to post data to websocket. " + e, e);
+		} finally {
+			if (this.pendingMessages != null) {
+				this.pendingMessages.remove(datapointsIngestion.getMessageId());
+			}
 		}
 	}
 

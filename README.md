@@ -16,6 +16,10 @@ For further inforation please view the [Time Series Tutorial](https://www.predix
 git clone https://github.com/PredixDev/timeseries-bootstrap.git
 ```
 
+##Set your encrypted password
+
+In your maven settings.xml file ensure you have [added your encrypted username and password](https://www.predix.io/resources/tutorials/tutorial-details.html?tutorial_id=1560&tag=1608&journey=Development%20tools%20and%20tips&resources=1565,1560).
+
 ##Build it
 
 1. From the command line, go the the project directory.
