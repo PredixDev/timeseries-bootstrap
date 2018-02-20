@@ -293,7 +293,7 @@ public class TimeseriesClientIT{
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag tag = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag();
 		tag.setName("RMD_metric2"); //$NON-NLS-1$
 		tag.setOrder("desc"); //$NON-NLS-1$
-
+		tag.setLimit(3);
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation agg = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation();
 		//agg.setInterval("2d"); //$NON-NLS-1$
 		//agg.setType("avg"); //$NON-NLS-1$

@@ -64,8 +64,11 @@ import com.neovisionaries.ws.client.WebSocketException;
 public class TimeseriesClientImpl implements TimeseriesClient {
 
 	private static Logger log = LoggerFactory.getLogger(TimeseriesClientImpl.class);
-	
-	private HashMap<String, CompletableFuture<Integer>> pendingMessages;
+
+	/**
+	 * 
+	 */
+	HashMap<String, CompletableFuture<Integer>> pendingMessages;
 
 	@Value("${predix.timeseries.timeout:10}")
 	private int MessageStatusTimeout;
@@ -99,7 +102,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	 * @param messageListener
 	 *            - method accepts custom message listener
 	 * @since Predix Time Series API v1.0 Method to create connection to TS
-	 *        Websocket to the configured TS Server List<Header> headers
+	 *        Websocket to the configured TS Server List&lt;Header&gt; headers
 	 */
 	@SuppressWarnings("nls")
 	@Override
@@ -124,7 +127,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 
 	/**
 	 * @since Predix Time Series API v1.0 Method to create connection to TS
-	 *        Websocket to the configured TS Server List<Header> headers
+	 *        Websocket to the configured TS Server List&lt;Header&gt; headers
 	 */
 	@SuppressWarnings("nls")
 	@Override
@@ -178,8 +181,9 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 				} else {
 					this.logger.debug("SUCCESS...." + am.getStatusCode() + "--ID:" + am.getMessageId()); //$NON-NLS-2$
 				}
-				if (pendingMessages != null && pendingMessages.containsKey(am.getMessageId())) {
-					pendingMessages.get(am.getMessageId()).complete(am.getStatusCode());
+				if (TimeseriesClientImpl.this.pendingMessages != null
+						&& TimeseriesClientImpl.this.pendingMessages.containsKey(am.getMessageId())) {
+					TimeseriesClientImpl.this.pendingMessages.get(am.getMessageId()).complete(am.getStatusCode());
 				}
 			}
 		};
@@ -208,7 +212,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 
 			this.wsClient.postTextWSData(request);
 
-			if (completed != null && completed.get(MessageStatusTimeout, TimeUnit.SECONDS) > 399) {
+			if (completed != null && completed.get(this.MessageStatusTimeout, TimeUnit.SECONDS) > 399) {
 				throw new IOException("ERROR STATUS CODE... " + completed.get());
 			}
 		} catch (IOException | WebSocketException | InterruptedException | ExecutionException | TimeoutException e) {
@@ -221,16 +225,14 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	}
 
 	/**
-	 * @since Predix Time Series API v1.0
-	 * @param uri
-	 *            -
+	 * @since Predix Time Series API v1.0 -
 	 * @see TimeSeriesAPIV1
 	 * @param datapoints
 	 *            -
 	 * @see DatapointsQuery
 	 * @param headers
-	 *            {@href https://github.com/PredixDev/predix-rmd-ref-app}
-	 * @return @see DatapointsResponse
+	 *            -
+	 * @return DatapointsResponse
 	 */
 
 	@SuppressWarnings("nls")
@@ -273,15 +275,11 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 
 	/**
 	 * @since Predix Time Series API v1.0
-	 * @param uri
-	 *            -
-	 * @see TimeSeriesAPIV1
-	 * @param datapoints
-	 *            -
 	 * @see DatapointsLatestQuery
 	 * @param headers
-	 *            {@href https://github.com/PredixDev/predix-rmd-ref-app}
-	 * @return @see DatapointsResponse
+	 *            -
+	 * 
+	 * @return DatapointsResponse
 	 */
 
 	@SuppressWarnings("nls")
@@ -326,12 +324,10 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 
 	/**
 	 * @since Predix Time Series API v1.0
-	 * @param queryUrl
-	 *            -
-	 * @see TimeSeriesAPIV1
 	 * @param headers
-	 *            {@href https://github.com/PredixDev/predix-rmd-ref-app}
-	 * @return @see TagsResponse
+	 *            -
+	 * 
+	 * @return TagsList
 	 */
 	@SuppressWarnings("nls")
 	@Override
@@ -435,7 +431,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 		headers.add(new BasicHeader("Origin", "http://localhost")); //$NON-NLS-2$
 		return headers;
 	}
-	
+
 	@SuppressWarnings("nls")
 	@Override
 	public List<Header> setZoneIdInHeaders(List<Header> headers) {

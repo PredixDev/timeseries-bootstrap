@@ -236,7 +236,7 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 	private void queryForDatapoints(List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery();
 		datapoints.setStart("1y-ago"); //$NON-NLS-1$
-
+		
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag tag = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag();
 		tag.setName("RMD_metric2"); //$NON-NLS-1$
 		
@@ -261,6 +261,7 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 		filters.setQualities(qualities);
 
 		tag.setFilters(filters);
+		tag.setLimit(3);
 
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation agg = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation();
 		//agg.setInterval("2d"); //$NON-NLS-1$
@@ -289,7 +290,7 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag tag = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag();
 		tag.setName("RMD_metric2"); //$NON-NLS-1$
-
+		tag.setLimit(3);
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation agg = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation();
 		//agg.setInterval("2d"); //$NON-NLS-1$
 		//agg.setType("avg"); //$NON-NLS-1$
@@ -319,7 +320,8 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag tag = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag();
 		tag.setName("RMD_metric2"); //$NON-NLS-1$
 		tag.setOrder("desc"); //$NON-NLS-1$
-
+		tag.setLimit(3);
+		
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation agg = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation();
 		//agg.setInterval("2d"); //$NON-NLS-1$
 		//agg.setType("avg"); //$NON-NLS-1$
