@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ge.predix.solsvc</groupId>
 	<artifactId>timeseries-bootstrap</artifactId>
-	<version>2.1.56</version>
+	<version>2.1.57</version>
 	<packaging>jar</packaging>
 	<properties>
 		<!-- Generic properties -->
@@ -12,11 +12,11 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Predix-RestClient for Security -->
-		<predix-websocket-client.version>2.1.46</predix-websocket-client.version>
+		<predix-websocket-client.version>2.1.47</predix-websocket-client.version>
 		<httpcomponents.version>4.5.2</httpcomponents.version>
 
-		<ext-model.version>2.3.48</ext-model.version>
-		<ext-util.version>2.3.48</ext-util.version>
+		<ext-model.version>2.3.49</ext-model.version>
+		<ext-util.version>2.3.49</ext-util.version>
 		<mockito.version>1.9.5</mockito.version>
 
 
