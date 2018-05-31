@@ -123,4 +123,9 @@ public interface TimeseriesClient {
 	 */
 	public void overrideConfig(ITimeseriesConfig tsConfig);
 
+	/**
+	 * @return -
+	 */
+	ITimeseriesConfig getTimeseriesConfig();
+
 }

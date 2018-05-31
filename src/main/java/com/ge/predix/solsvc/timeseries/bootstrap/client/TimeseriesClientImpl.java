@@ -86,6 +86,8 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	@Qualifier("defaultTimeseriesConfig")
 	private ITimeseriesConfig timeseriesConfig;
 
+	
+
 	@Override
 	public void overrideConfig(ITimeseriesConfig tsConfig) {
 		this.timeseriesConfig = tsConfig;
@@ -96,6 +98,14 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	@PostConstruct
 	private void init() {
 		//
+	}
+	
+	/**
+	 * @return the timeseriesConfig
+	 */
+	@Override
+	public ITimeseriesConfig getTimeseriesConfig() {
+		return this.timeseriesConfig;
 	}
 
 	/**
