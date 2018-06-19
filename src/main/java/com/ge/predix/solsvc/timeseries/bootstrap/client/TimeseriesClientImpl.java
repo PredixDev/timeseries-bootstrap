@@ -44,7 +44,6 @@ import com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsRespon
 import com.ge.predix.entity.timeseries.tags.TagsList;
 import com.ge.predix.solsvc.ext.util.IJsonMapper;
 import com.ge.predix.solsvc.ext.util.JsonMapper;
-import com.ge.predix.solsvc.restclient.impl.RestClient;
 import com.ge.predix.solsvc.timeseries.bootstrap.api.TimeSeriesAPIV1;
 import com.ge.predix.solsvc.timeseries.bootstrap.config.ITimeseriesConfig;
 import com.ge.predix.solsvc.websocket.client.WebSocketClient;
@@ -73,8 +72,6 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	@Value("${predix.timeseries.timeout:10}")
 	private int MessageStatusTimeout;
 
-	@Autowired
-	private RestClient restClient;
 
 	@Autowired
 	private WebSocketClient wsClient;
@@ -91,7 +88,6 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	@Override
 	public void overrideConfig(ITimeseriesConfig tsConfig) {
 		this.timeseriesConfig = tsConfig;
-		this.restClient.overrideRestConfig(tsConfig);
 		this.wsClient.overrideWebSocketConfig(tsConfig);
 	}
 
@@ -127,7 +123,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 			}
 			List<Header> nullHeaders = null;
 
-			this.wsClient.init(this.restClient, nullHeaders, listener);
+			this.wsClient.init( nullHeaders, listener);
 		} catch (Exception e) {
 			log.error("Connection to websocket failed. " + e);
 			throw new RuntimeException("Connection to websocket failed. ", e);
@@ -258,7 +254,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 		try {
 			String request = this.jsonMapper.toJson(datapoints);
 			log.debug(request);
-			httpResponse = this.restClient.post(this.timeseriesConfig.getQueryUrl(), this.jsonMapper.toJson(datapoints),
+			httpResponse = this.wsClient.post(this.timeseriesConfig.getQueryUrl(), this.jsonMapper.toJson(datapoints),
 					headers, this.timeseriesConfig.getDefaultConnectionTimeout(),
 					this.timeseriesConfig.getDefaultSocketTimeout());
 			handleIfErrorResponse(httpResponse, headers);
@@ -308,7 +304,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 		try {
 			String request = this.jsonMapper.toJson(latestDatapoints);
 			log.debug(request);
-			httpResponse = this.restClient.post(latestDatapointsUrl, this.jsonMapper.toJson(latestDatapoints), headers,
+			httpResponse = this.wsClient.post(latestDatapointsUrl, this.jsonMapper.toJson(latestDatapoints), headers,
 					this.timeseriesConfig.getDefaultConnectionTimeout(),
 					this.timeseriesConfig.getDefaultSocketTimeout());
 			handleIfErrorResponse(httpResponse, headers);
@@ -349,7 +345,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 		try {
 			log.trace("listTags url=" + tagsUrl);
 
-			httpResponse = this.restClient.get(tagsUrl, headers, this.timeseriesConfig.getDefaultConnectionTimeout(),
+			httpResponse = this.wsClient.get(tagsUrl, headers, this.timeseriesConfig.getDefaultConnectionTimeout(),
 					this.timeseriesConfig.getDefaultSocketTimeout());
 			handleIfErrorResponse(httpResponse, headers);
 			String responseEntity = processHttpResponseEntity(httpResponse.getEntity());
@@ -379,7 +375,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 		String aggregationsUrl = this.timeseriesConfig.getQueryUrl().replace(TimeSeriesAPIV1.datapointsURI,
 				TimeSeriesAPIV1.aggregationsURI);
 		try {
-			httpResponse = this.restClient.get(aggregationsUrl, headers,
+			httpResponse = this.wsClient.get(aggregationsUrl, headers,
 					this.timeseriesConfig.getDefaultConnectionTimeout(),
 					this.timeseriesConfig.getDefaultSocketTimeout());
 			handleIfErrorResponse(httpResponse, headers);
@@ -436,8 +432,8 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	@SuppressWarnings("nls")
 	@Override
 	public List<Header> getTimeseriesHeaders() {
-		List<Header> headers = this.restClient.getSecureTokenForClientId();
-		this.restClient.addZoneToHeaders(headers, this.timeseriesConfig.getZoneId());
+		List<Header> headers = this.wsClient.getSecureTokenForClientId();
+		this.wsClient.addZoneToHeaders(headers, this.timeseriesConfig.getZoneId());
 		headers.add(new BasicHeader("Origin", "http://localhost")); //$NON-NLS-2$
 		return headers;
 	}
@@ -445,7 +441,7 @@ public class TimeseriesClientImpl implements TimeseriesClient {
 	@SuppressWarnings("nls")
 	@Override
 	public List<Header> setZoneIdInHeaders(List<Header> headers) {
-		this.restClient.addZoneToHeaders(headers, this.timeseriesConfig.getZoneId());
+		this.wsClient.addZoneToHeaders(headers, this.timeseriesConfig.getZoneId());
 		headers.add(new BasicHeader("Origin", "http://localhost")); //$NON-NLS-2$
 		return headers;
 	}

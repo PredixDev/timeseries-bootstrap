@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,103 +30,118 @@ import com.ge.predix.entity.timeseries.datapoints.ingestionrequest.DatapointsIng
 import com.ge.predix.entity.timeseries.datapoints.ingestionresponse.AcknowledgementMessage;
 import com.ge.predix.solsvc.ext.util.IJsonMapper;
 import com.ge.predix.solsvc.ext.util.JsonMapper;
-import com.ge.predix.solsvc.restclient.impl.RestClient;
-import com.ge.predix.solsvc.timeseries.bootstrap.config.ITimeseriesConfig;
 import com.ge.predix.solsvc.websocket.client.WebSocketClient;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 
+/**
+ * 
+ * @author predix -
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class TimeseriesClientImplTest {
 	
 	@InjectMocks
-	protected TimeseriesClientImpl timeseriesClient;
+	private TimeseriesClientImpl timeseriesClient;
 	
 	@Mock
-	protected RestClient restClient;
+	private WebSocketClient webSocketClient;
 	
 	@Mock
-	protected WebSocketClient webSocketClient;
+	private IJsonMapper jsonMapper;
 	
-	@Mock
-	protected ITimeseriesConfig timeseriesConfig;
-	
-	@Mock
-	protected IJsonMapper jsonMapper;
-	
+	/**
+	 * 
+	 */
 	@Captor
 	protected ArgumentCaptor<WebSocketAdapter> listenerCaptor;
 	
+	/**
+	 * 
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 	
-	private JsonMapper realJsonMapper = new JsonMapper();
+	/**
+	 * 
+	 */
+	protected JsonMapper realJsonMapper = new JsonMapper();
 	
 	private DatapointsIngestion data;
 	
+	/**
+	 *  -
+	 */
 	@SuppressWarnings("rawtypes")
 	@Before
 	public void init() {
 		mockData();
 		MockitoAnnotations.initMocks(this);
 
-		when(jsonMapper.toJson(any())).thenAnswer(new Answer<String>() {
+		when(this.jsonMapper.toJson(any())).thenAnswer(new Answer<String>() {
 			@Override
 			public String answer(InvocationOnMock invocation) throws Throwable {
-				return realJsonMapper.toJson(invocation.getArguments()[0]);
+				return TimeseriesClientImplTest.this.realJsonMapper.toJson(invocation.getArguments()[0]);
 			}});
-		when(jsonMapper.fromJson(anyString(), any())).thenAnswer(new Answer() {
+		when(this.jsonMapper.fromJson(anyString(), any())).thenAnswer(new Answer() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {
-				return realJsonMapper.fromJson((String)invocation.getArguments()[0], (Class)invocation.getArguments()[1]);
+				return TimeseriesClientImplTest.this.realJsonMapper.fromJson((String)invocation.getArguments()[0], (Class)invocation.getArguments()[1]);
 			}});
 	}
 	
+	/**
+	 * @throws Exception -
+	 */
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void verifyPostDataReturnsSuccessfullyWhenStatusIsSuccess() throws Exception {
-		timeseriesClient.createTimeseriesWebsocketConnectionPool();
+		this.timeseriesClient.createTimeseriesWebsocketConnectionPool();
 		
-		verify(webSocketClient).init(any(), any(), listenerCaptor.capture());
+		verify(this.webSocketClient).init( any(), this.listenerCaptor.capture());
 		
 		doAnswer(new Answer() {
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {
 				String message = (String)invocation.getArguments()[0];
-				DatapointsIngestion data = realJsonMapper.fromJson(message, DatapointsIngestion.class);
+				DatapointsIngestion dataLocal = TimeseriesClientImplTest.this.realJsonMapper.fromJson(message, DatapointsIngestion.class);
 				AcknowledgementMessage ack = new AcknowledgementMessage();
-				ack.setMessageId(data.getMessageId());
+				ack.setMessageId(dataLocal.getMessageId());
 				ack.setStatusCode(202);
-				listenerCaptor.getValue().onTextMessage(null, realJsonMapper.toJson(ack));
+				TimeseriesClientImplTest.this.listenerCaptor.getValue().onTextMessage(null, TimeseriesClientImplTest.this.realJsonMapper.toJson(ack));
 				return null;
 			}
-		}).when(webSocketClient).postTextWSData(anyString());
+		}).when(this.webSocketClient).postTextWSData(anyString());
 
-		timeseriesClient.postDataToTimeseriesWebsocket(data);
+		this.timeseriesClient.postDataToTimeseriesWebsocket(this.data);
 	}
 	
+	/**
+	 * @throws Exception -
+	 */
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void verifyPostDataThrowsErrorWhenStatusIsFail() throws Exception {
-		timeseriesClient.createTimeseriesWebsocketConnectionPool();
+		this.timeseriesClient.createTimeseriesWebsocketConnectionPool();
 		
-		verify(webSocketClient).init(any(), any(), listenerCaptor.capture());
+		verify(this.webSocketClient).init(any(), this.listenerCaptor.capture());
 		
 		doAnswer(new Answer() {
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {
 				String message = (String)invocation.getArguments()[0];
-				DatapointsIngestion data = realJsonMapper.fromJson(message, DatapointsIngestion.class);
+				DatapointsIngestion dataLocal = TimeseriesClientImplTest.this.realJsonMapper.fromJson(message, DatapointsIngestion.class);
 				AcknowledgementMessage ack = new AcknowledgementMessage();
-				ack.setMessageId(data.getMessageId());
+				ack.setMessageId(dataLocal.getMessageId());
 				ack.setStatusCode(500);
-				listenerCaptor.getValue().onTextMessage(null, realJsonMapper.toJson(ack));
+				TimeseriesClientImplTest.this.listenerCaptor.getValue().onTextMessage(null, TimeseriesClientImplTest.this.realJsonMapper.toJson(ack));
 				return null;
 			}
-		}).when(webSocketClient).postTextWSData(anyString());
+		}).when(this.webSocketClient).postTextWSData(anyString());
 
-		expectedEx.expect(RuntimeException.class);
-		expectedEx.expectMessage(new BaseMatcher<String>() {
+		this.expectedEx.expect(RuntimeException.class);
+		this.expectedEx.expectMessage(new BaseMatcher<String>() {
+			@SuppressWarnings("nls")
 			@Override
 			public boolean matches(Object item) {
 				return item.toString().contains("java.io.IOException");
@@ -135,17 +149,22 @@ public class TimeseriesClientImplTest {
 
 			@Override
 			public void describeTo(Description description) {
+				//
 			}
 		});
-		timeseriesClient.postDataToTimeseriesWebsocket(data);
+		this.timeseriesClient.postDataToTimeseriesWebsocket(this.data);
 	}
 	
+	/**
+	 * @throws Exception -
+	 */
 	@Test
 	public void verifyPostDataThrowsErrorWhenThereIsNoResponse() throws Exception {
-		timeseriesClient.createTimeseriesWebsocketConnectionPool();
+		this.timeseriesClient.createTimeseriesWebsocketConnectionPool();
 
-		expectedEx.expect(RuntimeException.class);
-		expectedEx.expectMessage(new BaseMatcher<String>() {
+		this.expectedEx.expect(RuntimeException.class);
+		this.expectedEx.expectMessage(new BaseMatcher<String>() {
+			@SuppressWarnings("nls")
 			@Override
 			public boolean matches(Object item) {
 				return item.toString().contains("java.util.concurrent.TimeoutException");
@@ -153,14 +172,15 @@ public class TimeseriesClientImplTest {
 
 			@Override
 			public void describeTo(Description description) {
+				//
 			}
 		});
-		timeseriesClient.postDataToTimeseriesWebsocket(data);
+		this.timeseriesClient.postDataToTimeseriesWebsocket(this.data);
 	}
 	
 	private void mockData() {
-		data = new DatapointsIngestion();
-		data.setMessageId(String.valueOf(System.currentTimeMillis()));
+		this.data = new DatapointsIngestion();
+		this.data.setMessageId(String.valueOf(System.currentTimeMillis()));
 
 		Body body = new Body();
 		body.setName("SampleTag"); //$NON-NLS-1$
@@ -189,6 +209,6 @@ public class TimeseriesClientImplTest {
 		List<Body> bodies = new ArrayList<Body>();
 		bodies.add(body);
 
-		data.setBody(bodies);
+		this.data.setBody(bodies);
 	}
 }

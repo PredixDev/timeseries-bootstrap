@@ -25,7 +25,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
@@ -40,8 +39,6 @@ import com.ge.predix.entity.timeseries.datapoints.ingestionresponse.Acknowledgem
 import com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsResponse;
 import com.ge.predix.entity.timeseries.tags.TagsList;
 import com.ge.predix.solsvc.ext.util.JsonMapper;
-import com.ge.predix.solsvc.timeseries.bootstrap.client.TimeseriesClient;
-import com.ge.predix.solsvc.timeseries.bootstrap.config.ITimeseriesConfig;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 
@@ -53,103 +50,90 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @IntegrationTest({ "server.port=0" })
-@ComponentScan({"com.ge.predix.solsvc.restclient"})
+@ComponentScan({ "com.ge.predix.solsvc.restclient" })
 @ActiveProfiles("local")
-@ContextConfiguration(locations = {
-		"classpath*:META-INF/spring/ext-util-scan-context.xml",
+@ContextConfiguration(locations = { "classpath*:META-INF/spring/ext-util-scan-context.xml",
 		"classpath*:META-INF/spring/timeseries-bootstrap-scan-context.xml",
 		"classpath*:META-INF/spring/predix-websocket-client-scan-context.xml",
 		"classpath*:META-INF/spring/predix-rest-client-scan-context.xml",
 		"classpath*:META-INF/spring/predix-rest-client-sb-properties-context.xml" })
 @PropertySource("classpath:timeseries-config-test.properties")
-public class TimeseriesClientIT{
+public class TimeseriesClientIT {
 
-    private static Logger log = LoggerFactory.getLogger(TimeseriesClientIT.class);
+	private static Logger log = LoggerFactory.getLogger(TimeseriesClientIT.class);
 
-    /**
-     * tsConfig - 
-     */
-    @Autowired
-    @Qualifier("defaultTimeseriesConfig")
-    ITimeseriesConfig tsConfig;
-    
-    
-
-    
 	/**
 	 * 
 	 */
 	@Autowired
-	protected TimeseriesClient timeseriesFactory;
-
+	protected TimeseriesClient timeseriesClient;
 
 	/**
 	 * -
 	 */
 	@Test
 	public void runAllTest() {
-		this.timeseriesFactory.overrideConfig(this.tsConfig);
-		
-		List<Header> headers = this.timeseriesFactory.getTimeseriesHeaders();
-		
+		//this.timeseriesClient.overrideConfig(this.tsConfig);
+		List<Header> headers = this.timeseriesClient.getTimeseriesHeaders();
+
 		WebSocketAdapter mListener = new WebSocketAdapter() {
 			private JsonMapper jMapper = new JsonMapper();
-			private Logger logger = LoggerFactory
-					.getLogger(TimeseriesClient.class);
+			private Logger logger = LoggerFactory.getLogger(TimeseriesClient.class);
 
 			@Override
 			public void onTextMessage(WebSocket wsocket, String message) {
-				AcknowledgementMessage am = this.jMapper.fromJson(message,
-						AcknowledgementMessage.class);
-				this.logger.debug("Msg "+am.getMessageId()+" RECEIVED at "+new Timestamp(System.currentTimeMillis())); //$NON-NLS-1$ //$NON-NLS-2$
+				AcknowledgementMessage am = this.jMapper.fromJson(message, AcknowledgementMessage.class);
+				this.logger.debug(
+						"Msg " + am.getMessageId() + " RECEIVED at " + new Timestamp(System.currentTimeMillis())); //$NON-NLS-1$ //$NON-NLS-2$
 
-			}		
+			}
 		};
-		this.timeseriesFactory.createTimeseriesWebsocketConnectionPool(mListener);
-		createMetrics();
+		this.timeseriesClient.createTimeseriesWebsocketConnectionPool(mListener);
+		createMetrics(this.timeseriesClient);
 		try {
 			Thread.sleep(1000); // / due to delay in Injection pipeline and
 								// query
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
-		getTags(headers);
+		getTags(this.timeseriesClient,headers);
 		getAggregations(headers);
-		queryForDatapoints(headers);
+		queryForDatapoints(this.timeseriesClient,headers);
 		queryForDatapointsWithMilliSecsAsStartTime(headers);
 		queryForDatapointsAndOrder(headers);
 		queryForLatestDatapoints(headers);
 	}
-	
-	
+
 	/**
 	 * 
 	 */
 	@Test
 	public void runIDataInjectionTest() {
-		this.timeseriesFactory.overrideConfig(this.tsConfig);
-
-		List<Header> headers =  this.timeseriesFactory.getTimeseriesHeaders();
+		List<Header> headers = this.timeseriesClient.getTimeseriesHeaders();
 		WebSocketAdapter nullListener = null;
-        this.timeseriesFactory.createTimeseriesWebsocketConnectionPool(nullListener );
-		createMetrics();
+		this.timeseriesClient.createTimeseriesWebsocketConnectionPool(nullListener);
+		createMetrics(this.timeseriesClient);
 		try {
 			Thread.sleep(1000); // / due to delay in Injection pipeline and
 								// query
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
-//		getTags(headers);
-//		getAggregations(headers);
-		queryForDatapoints(headers);
-//		queryForDatapointsWithMilliSecsAsStartTime(headers);
-//		queryForDatapointsAndOrder(headers);
-//		queryForLatestDatapoints(headers);
+		// getTags(headers);
+		// getAggregations(headers);
+		queryForDatapoints(this.timeseriesClient,headers);
+		// queryForDatapointsWithMilliSecsAsStartTime(headers);
+		// queryForDatapointsAndOrder(headers);
+		// queryForLatestDatapoints(headers);
 	}
 
-
+	/**
+	 *  -
+	 * @param timeseriesClient -
+	 */
 	@SuppressWarnings({ "unchecked" })
-	private void createMetrics() {
+	static
+	void createMetrics(TimeseriesClient timeseriesClient) {
 		for (int i = 0; i < 10; i++) {
 			DatapointsIngestion dpIngestion = new DatapointsIngestion();
 			dpIngestion.setMessageId(String.valueOf(System.currentTimeMillis()));
@@ -182,14 +166,17 @@ public class TimeseriesClientIT{
 			bodies.add(body);
 
 			dpIngestion.setBody(bodies);
-			this.timeseriesFactory.postDataToTimeseriesWebsocket(dpIngestion);
-			log.debug("Msg "+dpIngestion.getMessageId()+" POSTED at "+new Timestamp(System.currentTimeMillis())); //$NON-NLS-1$ //$NON-NLS-2$
+			timeseriesClient.postDataToTimeseriesWebsocket(dpIngestion);
+			log.debug("Msg " + dpIngestion.getMessageId() + " POSTED at " + new Timestamp(System.currentTimeMillis())); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
-
-	private void getTags(List<Header> headers) {
-		TagsList tags = this.timeseriesFactory.listTags(headers);
+	/**
+	 * @param timeseriesClient -
+	 * @param headers -
+	 */
+	static void getTags(TimeseriesClient timeseriesClient, List<Header> headers) {
+		TagsList tags = timeseriesClient.listTags(headers);
 		for (String tag : tags.getResults()) {
 			if ("RMD_metric2".equals(tag)) { //$NON-NLS-1$
 				return;
@@ -198,9 +185,13 @@ public class TimeseriesClientIT{
 		fail("Expected tag (RMD_metric2) not found"); //$NON-NLS-1$
 	}
 
-	private void getAggregations(List<Header> headers) {
-		AggregationsList aggregations = this.timeseriesFactory.listAggregations(headers);
-		for (@SuppressWarnings("rawtypes") Map aggregation : aggregations.getResults()) {
+	/**
+	 * @param headers -
+	 */
+	void getAggregations(List<Header> headers) {
+		AggregationsList aggregations = this.timeseriesClient.listAggregations(headers);
+		for (@SuppressWarnings("rawtypes")
+		Map aggregation : aggregations.getResults()) {
 			if ("max".equals(aggregation.get("name"))) { //$NON-NLS-1$ //$NON-NLS-2$
 				return;
 			}
@@ -208,14 +199,18 @@ public class TimeseriesClientIT{
 		fail("Expected aggregation (max) not found"); //$NON-NLS-1$
 	}
 
+	/**
+	 * @param timeseriesClient - 
+	 * @param headers -
+	 */
 	@SuppressWarnings({ "unchecked" })
-	private void queryForDatapoints(List<Header> headers) {
+	static void queryForDatapoints(TimeseriesClient timeseriesClient, List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery();
 		datapoints.setStart("1y-ago"); //$NON-NLS-1$
 
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag tag = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag();
 		tag.setName("RMD_metric2"); //$NON-NLS-1$
-		
+
 		List<String> list = new ArrayList<String>();
 		list.add("server1"); //$NON-NLS-1$
 		com.ge.predix.entity.util.map.Map map = new com.ge.predix.entity.util.map.Map();
@@ -241,7 +236,6 @@ public class TimeseriesClientIT{
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation agg = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation();
 		agg.setInterval("2d"); //$NON-NLS-1$
 		agg.setType("avg"); //$NON-NLS-1$
-	
 
 		List<com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation> aggs = new ArrayList<com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation>();
 		aggs.add(agg);
@@ -250,7 +244,7 @@ public class TimeseriesClientIT{
 		List<com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag> tags = new ArrayList<com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag>();
 		tags.add(tag);
 		datapoints.setTags(tags);
-		DatapointsResponse response = this.timeseriesFactory.queryForDatapoints(datapoints, headers);
+		DatapointsResponse response = timeseriesClient.queryForDatapoints(datapoints, headers);
 		List<String> value = (List<String>) response.getTags().get(0).getResults().get(0).getAttributes()
 				.get("customer"); //$NON-NLS-1$
 		assertEquals("Acme", value.get(0)); //$NON-NLS-1$
@@ -258,8 +252,11 @@ public class TimeseriesClientIT{
 		assertEquals("server1", value.get(0)); //$NON-NLS-1$
 	}
 
+	/**
+	 * @param headers -
+	 */
 	@SuppressWarnings({ "unchecked" })
-	private void queryForDatapointsWithMilliSecsAsStartTime(List<Header> headers) {
+	void queryForDatapointsWithMilliSecsAsStartTime(List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery();
 		datapoints.setStart(1427463525000d);
 
@@ -276,7 +273,7 @@ public class TimeseriesClientIT{
 		List<com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag> tags = new ArrayList<com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag>();
 		tags.add(tag);
 		datapoints.setTags(tags);
-		DatapointsResponse response = this.timeseriesFactory.queryForDatapoints(datapoints, headers);
+		DatapointsResponse response = this.timeseriesClient.queryForDatapoints(datapoints, headers);
 		log.debug(response.toString());
 		List<String> value = (List<String>) response.getTags().get(0).getResults().get(0).getAttributes()
 				.get("customer"); //$NON-NLS-1$
@@ -285,8 +282,10 @@ public class TimeseriesClientIT{
 		assertEquals("server1", value.get(0)); //$NON-NLS-1$
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	private void queryForDatapointsAndOrder(List<Header> headers) {
+	/**
+	 * @param headers -
+	 */
+	@SuppressWarnings({ "unchecked", "nls" }) void queryForDatapointsAndOrder(List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery();
 		datapoints.setStart("1y-ago"); //$NON-NLS-1$
 
@@ -295,8 +294,8 @@ public class TimeseriesClientIT{
 		tag.setOrder("desc"); //$NON-NLS-1$
 		tag.setLimit(3);
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation agg = new com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation();
-		//agg.setInterval("2d"); //$NON-NLS-1$
-		//agg.setType("avg"); //$NON-NLS-1$
+		// agg.setInterval("2d"); //$NON-NLS-1$
+		// agg.setType("avg"); //$NON-NLS-1$
 		agg.setDivisor(10000.10);
 		agg.setType("div");
 		List<com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation> aggs = new ArrayList<com.ge.predix.entity.timeseries.datapoints.queryrequest.Aggregation>();
@@ -306,7 +305,7 @@ public class TimeseriesClientIT{
 		List<com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag> tags = new ArrayList<com.ge.predix.entity.timeseries.datapoints.queryrequest.Tag>();
 		tags.add(tag);
 		datapoints.setTags(tags);
-		com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsResponse response = this.timeseriesFactory
+		com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsResponse response = this.timeseriesClient
 				.queryForDatapoints(datapoints, headers);
 		List<String> value = (List<String>) response.getTags().get(0).getResults().get(0).getAttributes()
 				.get("customer"); //$NON-NLS-1$
@@ -315,8 +314,10 @@ public class TimeseriesClientIT{
 		assertEquals("server1", value.get(0)); //$NON-NLS-1$
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	private void queryForLatestDatapoints(List<Header> headers) {
+	/**
+	 * @param headers -
+	 */
+	@SuppressWarnings({ "unchecked" }) void queryForLatestDatapoints(List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.latest.DatapointsLatestQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.latest.DatapointsLatestQuery();
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.latest.Tag tag = new com.ge.predix.entity.timeseries.datapoints.queryrequest.latest.Tag();
 		tag.setName("RMD_metric2"); //$NON-NLS-1$
@@ -345,7 +346,7 @@ public class TimeseriesClientIT{
 		List<com.ge.predix.entity.timeseries.datapoints.queryrequest.latest.Tag> tagList = new ArrayList<com.ge.predix.entity.timeseries.datapoints.queryrequest.latest.Tag>();
 		tagList.add(tag);
 		datapoints.setTags(tagList);
-		com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsResponse response = this.timeseriesFactory
+		com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsResponse response = this.timeseriesClient
 				.queryForLatestDatapoint(datapoints, headers);
 		assertNotNull(response);
 	}

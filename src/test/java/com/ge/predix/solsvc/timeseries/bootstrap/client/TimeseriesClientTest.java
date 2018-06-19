@@ -26,7 +26,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ge.predix.entity.timeseries.datapoints.ingestionrequest.DatapointsIngestion;
 import com.ge.predix.solsvc.ext.util.JsonMapper;
 
@@ -60,8 +59,6 @@ public class TimeseriesClientTest
     @Autowired
     private JsonMapper    jsonMapper;
     
-    private ObjectMapper objectMapper = new ObjectMapper();
-
     /**
      * -
      */
@@ -94,7 +91,6 @@ public class TimeseriesClientTest
     @Test
     public void testUnmarshalWithStandardUnmarshaler()
     {
-        DatapointsIngestion dp = new DatapointsIngestion();
         String dpString;
         dpString = "{\"messageId\":null,\"body\":[]}";
 

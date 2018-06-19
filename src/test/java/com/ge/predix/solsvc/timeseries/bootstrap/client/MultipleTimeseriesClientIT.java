@@ -43,11 +43,7 @@ import com.ge.predix.entity.timeseries.datapoints.ingestionresponse.Acknowledgem
 import com.ge.predix.entity.timeseries.datapoints.queryresponse.DatapointsResponse;
 import com.ge.predix.entity.timeseries.tags.TagsList;
 import com.ge.predix.solsvc.ext.util.JsonMapper;
-import com.ge.predix.solsvc.timeseries.bootstrap.client.TimeseriesClient;
-import com.ge.predix.solsvc.timeseries.bootstrap.config.DefaultTimeseriesConfig;
 import com.ge.predix.solsvc.timeseries.bootstrap.config.ITimeseriesConfig;
-import com.ge.predix.solsvc.websocket.config.DefaultWebSocketConfigForTimeseries;
-import com.ge.predix.solsvc.websocket.config.IWebSocketConfig;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 
@@ -86,6 +82,9 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 	@Autowired
 	protected TimeseriesClient timeseriesClient;
 
+    /**
+     * 
+     */
     ApplicationContext applicationContext;
 
 	/**
@@ -160,13 +159,13 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
     @Test
     public void createATimeseriesClientFokASpecificTenant() {
 	    //create a prototype client for the Tenant
-	    TimeseriesClient timeseriesClient = (TimeseriesClient) this.applicationContext.getBean("timeseriesClientImpl");
+	    TimeseriesClient timeseriesClientLocal = (TimeseriesClient) this.applicationContext.getBean("timeseriesClientImpl");
 	    //Create a Config object, use this one because it's "prototype"
 	    ITimeseriesConfig timeseriesConfig = (ITimeseriesConfig) this.applicationContext.getBean("defaultTimeseriesConfig");
 	    timeseriesConfig.setZoneId(timeseriesConfig.getZoneId());
 	    timeseriesConfig.setWsUri(timeseriesConfig.getWsUri());
-	    timeseriesClient.overrideConfig(timeseriesConfig);
-	    timeseriesClient.createTimeseriesWebsocketConnectionPool();
+	    timeseriesClientLocal.overrideConfig(timeseriesConfig);
+	    timeseriesClientLocal.createTimeseriesWebsocketConnectionPool();
     }
 
     
@@ -232,7 +231,7 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 		fail("Expected aggregation (max) not found"); //$NON-NLS-1$
 	}
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "nls" })
 	private void queryForDatapoints(List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery();
 		datapoints.setStart("1y-ago"); //$NON-NLS-1$
@@ -283,7 +282,7 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 		assertEquals("server1", value.get(0)); //$NON-NLS-1$
 	}
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "nls" })
 	private void queryForDatapointsWithMilliSecsAsStartTime(List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery();
 		datapoints.setStart(1427463525000d);
@@ -312,7 +311,7 @@ public class MultipleTimeseriesClientIT implements ApplicationContextAware {
 		assertEquals("server1", value.get(0)); //$NON-NLS-1$
 	}
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "nls" })
 	private void queryForDatapointsAndOrder(List<Header> headers) {
 		com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery datapoints = new com.ge.predix.entity.timeseries.datapoints.queryrequest.DatapointsQuery();
 		datapoints.setStart("1y-ago"); //$NON-NLS-1$
