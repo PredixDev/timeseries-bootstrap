@@ -41,7 +41,7 @@ public class DefaultTimeseriesConfig extends DefaultWebSocketConfigForTimeseries
 {
     private static Logger log = LoggerFactory.getLogger(DefaultTimeseriesConfig.class);
 
-    @Value("${predix.timeseries.queryUrl}")
+    @Value("${predix.timeseries.queryUrl:#{null}}")
     private String             queryUrl;
 
     /*
