@@ -23,7 +23,7 @@ In your maven settings.xml file ensure you have [added your encrypted username a
 
 ## Build it
 
-1. From the command line, go the the project directory.
+1. From the command line, go to the project directory.
 2. Run as
 
 ```
@@ -46,7 +46,7 @@ In your maven settings.xml file ensure you have [added your encrypted username a
  predix.timeseries.zoneid=put.your.timeseries.zoneid.aka.instanceid.here
 ```
 
-2. From the command line, go the the project directory.
+2. From the command line, go to the project directory.
 3. Run as 
 
 ``` 
