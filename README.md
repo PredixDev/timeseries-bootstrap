@@ -23,7 +23,7 @@ In your maven settings.xml file ensure you have [added your encrypted username a
 
 ## Build it
 
-1. From the command line, go the the project directory.
+1. From the command line, go to the project directory.
 2. Run as
 
 ```
@@ -46,7 +46,7 @@ In your maven settings.xml file ensure you have [added your encrypted username a
  predix.timeseries.zoneid=put.your.timeseries.zoneid.aka.instanceid.here
 ```
 
-2. From the command line, go the the project directory.
+2. From the command line, go to the project directory.
 3. Run as 
 
 ``` 
@@ -64,6 +64,97 @@ In your maven settings.xml file ensure you have [added your encrypted username a
  </dependency>
  ```
  
+ ## Dependencies
+ 
+  - [Predix Websocket Client](https://github.com/PredixDev/predix-websocket-client)
+  	- [Predix Rest Client](https://github.com/PredixDev/predix-rest-client)
+	
+The Time Series API model is defined here
+  - [Ext Model](https://github.com/PredixDev/ext-interface)
+
+Accessing the model is done here
+  - [Ext Model](https://github.com/PredixDev/ext-util)
+ 
+ ## Properties
+ 
+ Standard Spring [property hierarchy](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html) but not using Spring Boot jar though.
+ 
+ - config/application.properties for local tests
+ - src/main/resources/application.properties are added to Jar files, be careful
+ - src/main/resources/application-default.properties in each jar, use at microservice level not SDK level, useful for microservice wide defaults
+ - src/main/resources/application-cloud.properties in each jar - used when in "cloud" profile
+ - src/main/resources/application.properties in each jar, use at microservice level not SDK level
+ - manifest.yml - environment variables - uses underscores not periods - sample microservice transforms these underscore based variables to period based.
+ - environment variables - SDKs read from Cloud (e.g. VCAP) environment variables to get properties at runtime in the cloud for things like UAA or Time Series Zone Id.
+ 
+ ## Usage
+ 
+ Usually you'll place this dependency inside a Spring Boot microservice.  It's not required but that means you'll need to manage all the Class creations that dependency injection handles automatically.  
+ 
+ ### Spring Context 
+ 
+ Spring resolves the beans by doing a component scan of package directories.   See the test cases for examples.  See [Wind Data](https://github.com/PredixDev/winddata-timeseries-service) microservice for an example in a running microservice.
+ 
+ In a test case place this annotation above the Class definition
+ 
+     @ContextConfiguration(locations = { 
+		"classpath*:META-INF/spring/timeseries-bootstrap-scan-context.xml",
+		"classpath*:META-INF/spring/predix-rest-client-sb-properties-context.xml" })    
+		
+The first file is located inside the timeseries jar file, it tells Spring to scan the com.ge.predix.solsvc.timeseries.bootstrap package for Spring beans.
+ 
+ The second file is used just for JUnit Tests, it sets up the properties file lookups in the exact same way tha a Spring Boot microservice does since this project isn't a Spring Boot project.
+		
+In a production file place this annotation above the Class definition
+
+    @ImportResource(
+     {
+     "classpath*:META-INF/spring/timeseries-bootstrap-scan-context.xml"
+     })
+ 
+ 
+
+### Profile
+
+JUnit tests are run in the "local" profile.  In the cloud, when in a Spring Boot microservice, they auto-magically set a "cloud" profile.
+
+### Autowire
+
+Simply place this @Autowired variable in your class.
+
+    @Autowired
+    private TimeseriesClient       timeseriesClient;
+
+### Initialize the connection pool
+
+Placing this in your microservice class will initialize the Websocket and REST connection pools.
+
+    @PostConstruct
+    public void init()
+    {
+        try
+        {
+            this.timeseriesClient.createTimeseriesWebsocketConnectionPool();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(
+                    "unable to set up timeseries Websocket Pool timeseriesConfig=" + this.timeseriesClient.getTimeseriesConfig(), e);
+        }
+    }
+ 
+ ### Call the Timeseries SDK methods
+ 
+
+This will post data to the Time Series ingest web socket endpoint, assuming you create a DataPointsIngestion Java object first. 
+
+    this.timeseriesClient.postDataToTimeseriesWebsocket(datapointsIngestion);
+    
+This for example will make a REST request to get the list of Tags.  Take a look at the TimeseriesClient interface for more API methods.
+ 
+    List<Header> headers = this.timeseriesClient.getTimeseriesHeaders();
+    TagsList tagsList = this.timeseriesClient.listTags(headers);
+
 ## Tech Stack
 
  - Spring

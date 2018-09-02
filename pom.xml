@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ge.predix.solsvc</groupId>
 	<artifactId>timeseries-bootstrap</artifactId>
-	<version>2.1.85</version>
+	<version>2.1.86</version>
 	<packaging>jar</packaging>
 	<properties>
 		<!-- Predix-RestClient for Security -->
-		<predix-websocket-client.version>2.1.63</predix-websocket-client.version>
-		<ext-model.version>2.4.9</ext-model.version>
-		<ext-util.version>2.4.9</ext-util.version>
+		<predix-websocket-client.version>2.1.64</predix-websocket-client.version>
+		<ext-model.version>2.4.10</ext-model.version>
+		<ext-util.version>2.4.10</ext-util.version>
 
 		<!-- Generic properties -->
 		<java.version>1.8</java.version>
@@ -19,6 +19,7 @@
 		<httpcomponents.version>4.5.2</httpcomponents.version>
 
 		<mockito.version>1.9.5</mockito.version>
+		<spring.version>4.1.6.RELEASE</spring.version>
 
 		<!-- Maven -->
 		<maven-jar-plugin.version>2.5</maven-jar-plugin.version>
@@ -40,12 +41,6 @@
 		<javax.websocket.version>1.1</javax.websocket.version>
 
 	</properties>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.2.3.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
-	</parent>
 
 	<dependencies>
 		<dependency>
@@ -73,14 +68,17 @@
 			<artifactId>commons-lang</artifactId>
 			<version>${common-lang.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>com.ge.predix.solsvc</groupId>
 			<artifactId>predix-websocket-client</artifactId>
 			<version>${predix-websocket-client.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<!-- Test Artifacts -->
@@ -94,11 +92,13 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

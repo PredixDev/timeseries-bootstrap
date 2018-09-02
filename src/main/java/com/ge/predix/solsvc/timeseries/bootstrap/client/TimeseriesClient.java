@@ -30,102 +30,128 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
  * @author 212438846
  *
  */
-public interface TimeseriesClient {
-	/**
-	 * @return -
-	 */
-	public List<Header> getTimeseriesHeaders();
+public interface TimeseriesClient
+{
+    /**
+     * @return -
+     */
+    public List<Header> getTimeseriesHeaders();
 
-	/**
-	 * @param headers
-	 *            -
-	 * @return -
-	 */
-	public List<Header> setZoneIdInHeaders(List<Header> headers);
+    /**
+     * @param headers
+     *            -
+     * @return -
+     */
+    public List<Header> addZoneIdToHeaders(List<Header> headers);
 
-	/**
-	 * @param messageListener
-	 *            - method accepts custom message listener
-	 * @since Predix Time Series API v1.0 Method to create connection to TS
-	 *        Websocket to the configured TS Server List&lt;Header&gt; headers
-	 */
-	public void createTimeseriesWebsocketConnectionPool(WebSocketAdapter messageListener);
 
-	/**
-	 * @since Predix Time Series API v1.0 Method to create connection to TS
-	 *        Websocket to the configured TS Server List&lt;Header&gt; headers
-	 */
-	public void createTimeseriesWebsocketConnectionPool();
+    /**
+     * @param headers -
+     * @param zoneId - your zoneId
+     * @return -
+     */
+    List<Header> addZoneIdToHeaders(List<Header> headers, String zoneId);
+    
+    /**
+     * @param headers
+     *            -
+     * @return -
+     */
+    public List<Header> addSecureTokenToHeaders(List<Header> headers);
 
-	/**
-	 * @since Predix Time Series API v1.0 Method to post data through Websocket
-	 *        to the configured TS Server
-	 * @param datapointsIngestion
-	 *            -
-	 * @see DatapointsIngestion
-	 * 
-	 */
-	public void postDataToTimeseriesWebsocket(DatapointsIngestion datapointsIngestion);
+    /**
+     * @param headers - 
+     * @param token - your token
+     * @return -
+     */
+    List<Header> addSecureTokenToHeaders(List<Header> headers, String token);
+    
+    /**
+     * @param messageListener
+     *            - method accepts custom message listener
+     * @since Predix Time Series API v1.0 Method to create connection to TS
+     *        Websocket to the configured TS Server List&lt;Header&gt; headers
+     */
+    public void createTimeseriesWebsocketConnectionPool(WebSocketAdapter messageListener);
 
-	/**
-	 * @since Predix Time Series API v1.0
-	 * @param uri
-	 * @see TimeSeriesAPIV1
-	 * @param datapointsQuery
-	 * @see DatapointsQuery
-	 * @param headers
-	 *            {@href https://github.com/PredixDev/predix-rest-client}
-	 * @return @see DatapointsResponse
-	 */
+    /**
+     * @since Predix Time Series API v1.0 Method to create connection to TS
+     *        Websocket to the configured TS Server List&lt;Header&gt; headers
+     */
+    public void createTimeseriesWebsocketConnectionPool();
 
-	/**
-	 * @since Predix Time Series API v1.0 -
-	 * @param DatapointsQuery
-	 *            -
-	 * @param headers
-	 *            -
-	 * @return DatapointsResponse
-	 */
-	public DatapointsResponse queryForDatapoints(DatapointsQuery DatapointsQuery, List<Header> headers);
+    /**
+     * @since Predix Time Series API v1.0 Method to post data through Websocket
+     *        to the configured TS Server
+     * @param datapointsIngestion
+     *            -
+     * @see DatapointsIngestion
+     * 
+     */
+    public void postDataToTimeseriesWebsocket(DatapointsIngestion datapointsIngestion);
 
-	/**
-	 * @since Predix Time Series API v1.0
-	 * @param latestDatapoints
-	 *            -
-	 * @see DatapointsLatestQuery
-	 * @param headers
-	 *            -
-	 * @return DatapointsResponse
-	 */
+    /**
+     * @since Predix Time Series API v1.0
+     * @param uri
+     * @see TimeSeriesAPIV1
+     * @param datapointsQuery
+     * @see DatapointsQuery
+     * @param headers
+     *            {@href https://github.com/PredixDev/predix-rest-client}
+     * @return @see DatapointsResponse
+     */
 
-	public DatapointsResponse queryForLatestDatapoint(DatapointsLatestQuery latestDatapoints, List<Header> headers);
+    /**
+     * @since Predix Time Series API v1.0 -
+     * @param DatapointsQuery
+     *            -
+     * @param headers
+     *            -
+     * @return DatapointsResponse
+     */
+    public DatapointsResponse queryForDatapoints(DatapointsQuery DatapointsQuery, List<Header> headers);
 
-	/**
-	 * @since Predix Time Series API v1.0
-	 * @param headers
-	 *            -
-	 * 
-	 * @return TagsList
-	 */
-	public TagsList listTags(List<Header> headers);
+    /**
+     * @since Predix Time Series API v1.0
+     * @param latestDatapoints
+     *            -
+     * @see DatapointsLatestQuery
+     * @param headers
+     *            -
+     * @return DatapointsResponse
+     */
 
-	/**
-	 * @since Predix Time Series API v1.0
-	 * @param headers
-	 *            -
-	 * @return AggregationsList
-	 */
-	public AggregationsList listAggregations(List<Header> headers);
+    public DatapointsResponse queryForLatestDatapoint(DatapointsLatestQuery latestDatapoints, List<Header> headers);
 
-	/**
-	 * @param tsConfig
-	 *            -
-	 */
-	public void overrideConfig(ITimeseriesConfig tsConfig);
+    /**
+     * @since Predix Time Series API v1.0
+     * @param headers
+     *            -
+     * 
+     * @return TagsList
+     */
+    public TagsList listTags(List<Header> headers);
 
-	/**
-	 * @return -
-	 */
-	ITimeseriesConfig getTimeseriesConfig();
+    /**
+     * @since Predix Time Series API v1.0
+     * @param headers
+     *            -
+     * @return AggregationsList
+     */
+    public AggregationsList listAggregations(List<Header> headers);
+
+    /**
+     * @param tsConfig
+     *            -
+     */
+    public void overrideConfig(ITimeseriesConfig tsConfig);
+
+    /**
+     * @return -
+     */
+    ITimeseriesConfig getTimeseriesConfig();
+
+
+
 
 }

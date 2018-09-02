@@ -18,8 +18,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -36,18 +34,10 @@ import com.ge.predix.solsvc.ext.util.JsonMapper;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@IntegrationTest(
-{
-        "server.port=0"
-})
-@ComponentScan("com.ge.predix.solsvc.restclient")
 @ActiveProfiles("local")
 @ContextConfiguration(locations =
 {
-        "classpath*:META-INF/spring/ext-util-scan-context.xml",
         "classpath*:META-INF/spring/timeseries-bootstrap-scan-context.xml",
-        "classpath*:META-INF/spring/predix-websocket-client-scan-context.xml",
-        "classpath*:META-INF/spring/predix-rest-client-scan-context.xml",
         "classpath*:META-INF/spring/predix-rest-client-sb-properties-context.xml"
 })
 @PropertySource("classpath:timeseries-config-test.properties")

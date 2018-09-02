@@ -20,8 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,8 +29,6 @@ import com.ge.predix.entity.timeseries.datapoints.ingestionresponse.Acknowledgem
 import com.ge.predix.solsvc.ext.util.JsonMapper;
 import com.ge.predix.solsvc.timeseries.bootstrap.config.ITimeseriesConfig;
 import com.ge.predix.solsvc.timeseries.bootstrap.config.TimeseriesConfigFactory;
-import com.ge.predix.solsvc.websocket.config.IWebSocketConfig;
-import com.ge.predix.solsvc.websocket.config.WebSocketConfigFactory;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 
@@ -43,13 +39,9 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@IntegrationTest({ "server.port=0" })
-@ComponentScan({ "com.ge.predix.solsvc.restclient" })
 @ActiveProfiles("local")
-@ContextConfiguration(locations = { "classpath*:META-INF/spring/ext-util-scan-context.xml",
+@ContextConfiguration(locations = { 
 		"classpath*:META-INF/spring/timeseries-bootstrap-scan-context.xml",
-		"classpath*:META-INF/spring/predix-websocket-client-scan-context.xml",
-		"classpath*:META-INF/spring/predix-rest-client-scan-context.xml",
 		"classpath*:META-INF/spring/predix-rest-client-sb-properties-context.xml" })
 @PropertySource("classpath:timeseries-config-test.properties")
 public class TimeseriesClientRuntimeIT {
