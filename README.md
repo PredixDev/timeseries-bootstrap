@@ -72,20 +72,20 @@ In your maven settings.xml file ensure you have [added your encrypted username a
 The Time Series API model is defined here
   - [Ext Model](https://github.com/PredixDev/ext-interface)
 
-Accessing the model is done here
-  - [Ext Model](https://github.com/PredixDev/ext-util)
+Accessing the model is done here using a class JsonMapper.
+  - [Ext Util](https://github.com/PredixDev/ext-interface)
  
  ## Properties
  
  Standard Spring [property hierarchy](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html) but not using Spring Boot jar though.
  
- - config/application.properties for local tests
- - src/main/resources/application.properties are added to Jar files, be careful
- - src/main/resources/application-default.properties in each jar, use at microservice level not SDK level, useful for microservice wide defaults
- - src/main/resources/application-cloud.properties in each jar - used when in "cloud" profile
- - src/main/resources/application.properties in each jar, use at microservice level not SDK level
- - manifest.yml - environment variables - uses underscores not periods - sample microservice transforms these underscore based variables to period based.
- - environment variables - SDKs read from Cloud (e.g. VCAP) environment variables to get properties at runtime in the cloud for things like UAA or Time Series Zone Id.
+ - **config/application.properties** for local tests
+ - **src/main/resources/application.properties** are added to Jar files, be careful
+ - **src/main/resources/application-default.properties** in each jar, use at microservice level not SDK level, useful for microservice wide defaults
+ - **src/main/resources/application-cloud.properties** in each jar - used when in "cloud" profile
+ - **src/main/resources/application.properties** in each jar, use at microservice level not SDK level
+ - **manifest.yml** - environment variables - uses underscores not periods - sample microservice transforms these underscore based variables to period based.
+ - **environment variables** - SDKs read from Cloud (e.g. VCAP) environment variables to get properties at runtime in the cloud for things like UAA or Time Series Zone Id.
  
  ## Usage
  
