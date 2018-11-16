@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ge.predix.solsvc</groupId>
 	<artifactId>timeseries-bootstrap</artifactId>
-	<version>2.1.88</version>
+	<version>2.1.89</version>
 	<packaging>jar</packaging>
 	<properties>
 		<!-- Predix-RestClient for Security -->
-		<predix-websocket-client.version>2.1.64</predix-websocket-client.version>
-		<ext-model.version>2.4.12</ext-model.version>
-		<ext-util.version>2.4.12</ext-util.version>
+		<predix-websocket-client.version>2.1.65</predix-websocket-client.version>
+		<ext-model.version>2.4.13</ext-model.version>
+		<ext-util.version>2.4.13</ext-util.version>
 
 		<!-- Generic properties -->
 		<java.version>1.8</java.version>

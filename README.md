@@ -165,4 +165,4 @@ This for example will make a REST request to get the list of Tags.  Take a look 
  
  [Exploring Time Series](https://www.predix.io/resources/tutorials/journey.html#Journey.Exploring Time Series)
 
-[![Analytics](https://ga-beacon.appspot.com/UA-82773213-1/timeseries-bootstrap/readme?pixel)](https://github.com/PredixDev)
+[![Analytics](https://predix-beacon.appspot.com/UA-82773213-1/timeseries-bootstrap/readme?pixel)](https://github.com/PredixDev)
